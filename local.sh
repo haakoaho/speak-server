@@ -11,7 +11,7 @@ gradle bootRun &
 
 echo "Starting frontend..."
 cd ../frontend
-npm install
-npm start &
+npm run build
+npm run start &
 
 wait
