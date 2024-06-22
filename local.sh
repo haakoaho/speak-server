@@ -8,6 +8,21 @@ git submodule update --init --recursive --remote
 
 source ~/.bashrc
 
+# Check for existing processes
+# Backend port check
+if lsof -i tcp:8081 -t > /dev/null; then
+  echo "Port 8081 is already in use. Stopping the process..."
+  PID=$(lsof -i tcp:8081 -t -p)
+  kill -9 $PID
+fi
+
+# Frontend port check (similar logic for port 3000)
+if lsof -i tcp:3000 -t > /dev/null; then
+  echo "Port 3000 is already in use. Stopping the process..."
+  PID=$(lsof -i tcp:3000 -t -p)
+  kill -9 $PID
+fi
+
 # Start ngrok tunnels
 echo "Starting ngrok for backend (port 8081)..."
 nohup ngrok http 8081 > ngrok_backend.log &
