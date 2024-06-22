@@ -6,11 +6,11 @@ source ~/.bashrc
 
 
 echo "Starting backend..."
-cd /backend
+cd backend
 gradle bootRun &
 
 echo "Starting frontend..."
-cd /frontend
+cd ../frontend
 npm install
 npm start &
 
