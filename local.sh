@@ -23,11 +23,22 @@ if lsof -i tcp:3000 -t > /dev/null; then
 fi
 
 # Start ngrok tunnels
-nohup ngrok http 3000 8081 > /dev/null 2>&1 &
+echo "Starting ngrok for backend (port 8081)..."
+nohup ngrok http 8081 > /dev/null 2>&1 &
+
+echo "Starting ngrok for frontend (port 3000)..."
+nohup ngrok http 3000 > /dev/null 2>&1 &
+
+
+# Start the backend service
+echo "Starting backend..."
+cd backend
+gradle bootRun &
+
 
 
 # Wait for ngrok to initialize
-sleep 20  # Ensure ngrok has time to initialize
+sleep 15  # Ensure ngrok has time to initialize
 
 # Debugging step: Check if ngrok is running
 if ! pgrep ngrok > /dev/null; then
@@ -54,11 +65,6 @@ if [ -z "$FRONTEND_URL" ]; then
 else
   echo "Frontend URL: $FRONTEND_URL"
 fi
-
-# Start the backend service
-echo "Starting backend..."
-cd backend
-gradle bootRun &
 
 # Start the frontend service
 echo "Starting frontend..."
