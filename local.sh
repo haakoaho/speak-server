@@ -22,7 +22,10 @@ if lsof -i tcp:3000 -t > /dev/null; then
   kill -9 $PID
 fi
 
-ngrok start --all
+# Start ngrok tunnels
+echo "Starting ngrok forwarding..."
+nohup ngrok start --all > /dev/null 2>&1 &
+
 
 # Wait for ngrok to initialize
 sleep 20  # Ensure ngrok has time to initialize
