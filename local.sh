@@ -40,14 +40,14 @@ fi
 NGROK_API_RESPONSE=$(curl -s http://localhost:4040/api/tunnels)
 echo "ngrok API response: $NGROK_API_RESPONSE"  # Debugging step: Print API response
 
-BACKEND_URL=$(echo $NGROK_API_RESPONSE | jq -r '.tunnels[] | select(.config.addr=="http://localhost:8081") | .public_url')
+NEXT_PUBLIC_BACKEND_URL=$(echo $NGROK_API_RESPONSE | jq -r '.tunnels[] | select(.config.addr=="http://localhost:8081") | .public_url')
 FRONTEND_URL=$(echo $NGROK_API_RESPONSE | jq -r '.tunnels[] | select(.config.addr=="http://localhost:3000") | .public_url')
 
 # Check if URLs were fetched successfully
-if [ -z "$BACKEND_URL" ]; then
+if [ -z "$NEXT_PUBLIC_BACKEND_URL" ]; then
   echo "Failed to fetch backend URL from ngrok."
 else
-  echo "Backend URL: $BACKEND_URL"
+  echo "Backend URL: $NEXT_PUBLIC_BACKEND_URL"
 fi
 
 if [ -z "$FRONTEND_URL" ]; then
