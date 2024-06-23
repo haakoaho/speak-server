@@ -30,7 +30,7 @@ echo "Starting ngrok for frontend (port 3000)..."
 nohup ngrok http 3000 > ngrok_frontend.log 2>&1 &
 
 # Wait for ngrok to initialize
-sleep 10  # Ensure ngrok has time to initialize
+sleep 20  # Ensure ngrok has time to initialize
 
 # Debugging step: Check if ngrok is running
 if ! pgrep ngrok > /dev/null; then
