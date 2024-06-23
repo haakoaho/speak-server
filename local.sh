@@ -30,7 +30,7 @@ echo "Starting ngrok for frontend (port 3000)..."
 nohup ngrok http 3000 > ngrok_frontend.log &
 
 # Wait for ngrok to initialize
-sleep 5
+sleep 20
 
 # Print the public URLs from ngrok
 echo "Backend URL:"
