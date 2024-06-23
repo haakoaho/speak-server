@@ -22,7 +22,7 @@ if lsof -i tcp:3000 -t > /dev/null; then
   kill -9 $PID
 fi
 
-ngrok start --config=ngrok.yml
+ngrok start --all
 
 # Wait for ngrok to initialize
 sleep 20  # Ensure ngrok has time to initialize
