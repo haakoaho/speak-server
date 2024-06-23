@@ -38,7 +38,7 @@ gradle bootRun &
 
 
 # Wait for ngrok to initialize
-sleep 15  # Ensure ngrok has time to initialize
+sleep 45  # ensure backend has time to initialize
 
 # Debugging step: Check if ngrok is running
 if ! pgrep ngrok > /dev/null; then
