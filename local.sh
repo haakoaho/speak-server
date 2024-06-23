@@ -24,17 +24,26 @@ fi
 
 # Start ngrok tunnels
 echo "Starting ngrok for backend (port 8081)..."
-nohup ngrok http 8081 > /dev/null &
+nohup ngrok http 8081 > ngrok_backend.log 2>&1 &
 
 echo "Starting ngrok for frontend (port 3000)..."
-nohup ngrok http 3000 > /dev/null &
+nohup ngrok http 3000 > ngrok_frontend.log 2>&1 &
 
 # Wait for ngrok to initialize
 sleep 10  # Ensure ngrok has time to initialize
 
+# Debugging step: Check if ngrok is running
+if ! pgrep ngrok > /dev/null; then
+  echo "ngrok is not running. Exiting..."
+  exit 1
+fi
+
 # Fetch public URLs from ngrok API
-BACKEND_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[] | select(.config.addr=="http://localhost:8081") | .public_url')
-FRONTEND_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[] | select(.config.addr=="http://localhost:3000") | .public_url')
+NGROK_API_RESPONSE=$(curl -s http://localhost:4040/api/tunnels)
+echo "ngrok API response: $NGROK_API_RESPONSE"  # Debugging step: Print API response
+
+BACKEND_URL=$(echo $NGROK_API_RESPONSE | jq -r '.tunnels[] | select(.config.addr=="http://localhost:8081") | .public_url')
+FRONTEND_URL=$(echo $NGROK_API_RESPONSE | jq -r '.tunnels[] | select(.config.addr=="http://localhost:3000") | .public_url')
 
 # Check if URLs were fetched successfully
 if [ -z "$BACKEND_URL" ]; then
