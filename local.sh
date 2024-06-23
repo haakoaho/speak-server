@@ -23,11 +23,12 @@ if lsof -i tcp:3000 -t > /dev/null; then
 fi
 
 # Start ngrok tunnels
-echo "Starting ngrok for backend (port 8081)..."
-nohup ngrok http 8081 > ngrok_backend.log 2>&1 &
 
 echo "Starting ngrok for frontend (port 3000)..."
 nohup ngrok http 3000 > ngrok_frontend.log 2>&1 &
+
+echo "Starting ngrok for backend (port 8081)..."
+nohup ngrok http 8081 > ngrok_backend.log 2>&1 &
 
 # Wait for ngrok to initialize
 sleep 20  # Ensure ngrok has time to initialize
