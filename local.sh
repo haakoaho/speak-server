@@ -10,7 +10,7 @@ source ~/.bashrc
 
 # Check for existing processes
 # Backend port check
-if lsof -i tcp:3001 -t > /dev/null; then
+if lsof -i tcp:8081 -t > /dev/null; then
   echo "Port 8081 is already in use. Stopping the process..."
   gradle --stop
 fi
@@ -24,13 +24,13 @@ fi
 
 # Start ngrok tunnels
 echo "Starting ngrok for backend (port 8081)..."
-nohup ngrok http 3001 > /dev/null 2>&1 &
+nohup ngrok http 25825 > /dev/null 2>&1 &
 
 echo "Starting ngrok for frontend (port 3000)..."
-nohup ngrok http 3000 > /dev/null 2>&1 &
+nohup ngrok http 27452 > /dev/null 2>&1 &
 
 # Wait for ngrok to initialize
-sleep 10  # Ensure ngrok has time to initialize
+sleep 20  # Ensure ngrok has time to initialize
 
 # Debugging step: Check if ngrok is running
 if ! pgrep ngrok > /dev/null; then
