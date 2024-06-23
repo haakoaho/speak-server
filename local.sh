@@ -24,20 +24,30 @@ fi
 
 # Start ngrok tunnels
 echo "Starting ngrok for backend (port 8081)..."
-nohup ngrok http 8081 > ngrok_backend.log &
+nohup ngrok http 8081 > /dev/null &
 
 echo "Starting ngrok for frontend (port 3000)..."
-nohup ngrok http 3000 > ngrok_frontend.log &
+nohup ngrok http 3000 > /dev/null &
 
 # Wait for ngrok to initialize
-sleep 20
+sleep 10  # Ensure ngrok has time to initialize
 
-# Print the public URLs from ngrok
-echo "Backend URL:"
-grep -o "https://[-0-9a-z]*\.ngrok-free\.app" ngrok_backend.log
+# Fetch public URLs from ngrok API
+BACKEND_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[] | select(.config.addr=="http://localhost:8081") | .public_url')
+FRONTEND_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[] | select(.config.addr=="http://localhost:3000") | .public_url')
 
-echo "Frontend URL:"
-grep -o "https://[-0-9a-z]*\.ngrok-free\.app" ngrok_frontend.log
+# Check if URLs were fetched successfully
+if [ -z "$BACKEND_URL" ]; then
+  echo "Failed to fetch backend URL from ngrok."
+else
+  echo "Backend URL: $BACKEND_URL"
+fi
+
+if [ -z "$FRONTEND_URL" ]; then
+  echo "Failed to fetch frontend URL from ngrok."
+else
+  echo "Frontend URL: $FRONTEND_URL"
+fi
 
 # Start the backend service
 echo "Starting backend..."
