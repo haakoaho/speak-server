@@ -12,8 +12,7 @@ source ~/.bashrc
 # Backend port check
 if lsof -i tcp:8081 -t > /dev/null; then
   echo "Port 8081 is already in use. Stopping the process..."
-  PID=$(lsof -i tcp:8081 -t -p)
-  kill -9 $PID
+  gradle --stop
 fi
 
 # Frontend port check (similar logic for port 3000)
@@ -35,10 +34,10 @@ sleep 5
 
 # Print the public URLs from ngrok
 echo "Backend URL:"
-grep -o "https://[0-9a-z]*\.ngrok\.io" ngrok_backend.log
+grep -o "https://[-0-9a-z]*\.ngrok-free\.app" ngrok_backend.log
 
 echo "Frontend URL:"
-grep -o "https://[0-9a-z]*\.ngrok\.io" ngrok_frontend.log
+grep -o "https://[-0-9a-z]*\.ngrok-free\.app" ngrok_frontend.log
 
 # Start the backend service
 echo "Starting backend..."
