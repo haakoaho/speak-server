@@ -28,37 +28,32 @@ nohup ngrok start --all > /dev/null 2>&1 &
 
 
 # Wait for ngrok to initialize
-sleep 20  # Ensure ngrok has time to initialize
-
-# Debugging step: Check if ngrok is running
-if ! pgrep ngrok > /dev/null; then
-  echo "ngrok is not running. Exiting..."
-  exit 1
-fi
+sleep 15  # Ensure ngrok has time to initialize
 
 # Fetch public URLs from ngrok API
 NGROK_API_RESPONSE=$(curl -s http://localhost:4040/api/tunnels)
-echo "ngrok API response: $NGROK_API_RESPONSE"  # Debugging step: Print API response
 
-NEXT_PUBLIC_BACKEND_URL=$(echo $NGROK_API_RESPONSE | jq -r '.tunnels[] | select(.config.addr=="http://localhost:8081") | .public_url')
+BACKEND_URL=$(echo $NGROK_API_RESPONSE | jq -r '.tunnels[] | select(.config.addr=="http://localhost:8081") | .public_url')
 FRONTEND_URL=$(echo $NGROK_API_RESPONSE | jq -r '.tunnels[] | select(.config.addr=="http://localhost:3000") | .public_url')
 
-# Check if URLs were fetched successfully
-if [ -z "$NEXT_PUBLIC_BACKEND_URL" ]; then
-  echo "Failed to fetch backend URL from ngrok."
-else
-  echo "Backend URL: $NEXT_PUBLIC_BACKEND_URL"
-fi
+cd ../speak-fun
+DEPLOYMENTS_FILE="deployments.json"
 
-if [ -z "$FRONTEND_URL" ]; then
-  echo "Failed to fetch frontend URL from ngrok."
-else
-  echo "Frontend URL: $FRONTEND_URL"
-fi
+git reset --hard
+# Update the JSON file with new URLs
+jq --arg frontendUrl "$FRONTEND_URL" \
+   --arg backendUrl "$BACKEND_URL" \
+   '.frontendUrl = $frontendUrl | .backendUrl = $backendUrl' \
+   "$DEPLOYMENTS_FILE" > tmp && mv tmp "$DEPLOYMENTS_FILE"
+
+git add "$DEPLOYMENTS_FILE"
+git commit -m "Update deployment URLs"
+git push origin main &
+
 
 # Start the backend service
 echo "Starting backend..."
-cd backend
+cd ../speak-server/backend
 gradle bootRun &
 
 # Start the frontend service
