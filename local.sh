@@ -64,7 +64,8 @@ gradle bootRun &
 # Start the frontend service
 echo "Starting frontend..."
 cd ../frontend
-npm run start &
+NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL npm run start
+ &
 
 # Wait for both services to complete
 wait
