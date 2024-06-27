@@ -52,14 +52,15 @@ git push origin main &
 
 REPO="haakoaho/mobile-speak"
 
+cd ../speak-server
 # Download the build artifact from the latest workflow run in the specified repository
 echo "Downloading build artifact..."
 latest_run_id=$(gh run list --repo $REPO --workflow=build.yml --branch=main --limit=1 --json databaseId --jq '.[0].databaseId')
-gh run download $latest_run_id --repo $REPO -n next-build -D ./frontend/.next
+gh run download $latest_run_id --repo $REPO -n next-build -D frontend/.next
 
 # Start the backend service
 echo "Starting backend..."
-cd ../speak-server/backend
+cd backend
 gradle bootRun &
 
 # Start the frontend service
