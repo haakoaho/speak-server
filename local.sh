@@ -50,9 +50,12 @@ git add "$DEPLOYMENTS_FILE"
 git commit -m "Update deployment URLs"
 git push origin main &
 
+REPO="haakoaho/mobile-speak"
+
+# Download the build artifact from the latest workflow run in the specified repository
 echo "Downloading build artifact..."
-latest_run_id=$(gh run list --workflow=build.yml --branch=main --limit=1 --json databaseId --jq '.[0].databaseId')
-gh run download $latest_run_id -n next-build -D ./frontend/.next
+latest_run_id=$(gh run list --repo $REPO --workflow=build.yml --branch=main --limit=1 --json databaseId --jq '.[0].databaseId')
+gh run download $latest_run_id --repo $REPO -n next-build -D ./frontend/.next
 
 # Start the backend service
 echo "Starting backend..."
