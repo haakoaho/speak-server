@@ -50,6 +50,9 @@ git add "$DEPLOYMENTS_FILE"
 git commit -m "Update deployment URLs"
 git push origin main &
 
+echo "Downloading build artifact..."
+latest_run_id=$(gh run list --workflow=build.yml --branch=main --limit=1 --json databaseId --jq '.[0].databaseId')
+gh run download $latest_run_id -n next-build -D ./frontend/.next
 
 # Start the backend service
 echo "Starting backend..."
