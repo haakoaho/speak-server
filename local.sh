@@ -59,6 +59,7 @@ ARTIFACT_URL=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
 
 
 curl -L -H "Authorization: token $GITHUB_TOKEN" -o artifact.zip $ARTIFACT_URL
+rm -r .next
 mkdir -p .next
 unzip artifact.zip -d .next
 
