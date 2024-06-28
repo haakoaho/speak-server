@@ -73,7 +73,7 @@ gradle bootRun &
 echo "Starting frontend..."
 cd ../frontend
 npm run start
- &
+& wait
 
 # Wait for both services to complete
-wait
+
