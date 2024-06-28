@@ -1,46 +1,39 @@
-#!/bin/bash
+# sourcing session
+source ~/.bashrc
 
-# Pull the latest code and update submodules
+# git session
 git checkout main
 git pull
 git submodule foreach --recursive git reset --hard
 git submodule update --init --recursive --remote
 
-source ~/.bashrc
-
-# Check for existing processes
-# Backend port check
+# stop running services session
 if lsof -i tcp:8081 -t > /dev/null; then
   echo "Port 8081 is already in use. Stopping the process..."
   gradle --stop
 fi
 
-# Frontend port check (similar logic for port 3000)
 if lsof -i tcp:3000 -t > /dev/null; then
   echo "Port 3000 is already in use. Stopping the process..."
   PID=$(lsof -i tcp:3000 -t -p)
   kill -9 $PID
 fi
 
-# Start ngrok tunnels
+#ngrok session
 echo "Starting ngrok forwarding..."
 nohup ngrok start --all > /dev/null 2>&1 &
-
-
-# Wait for ngrok to initialize
 sleep 15  # Ensure ngrok has time to initialize
 
-# Fetch public URLs from ngrok API
 NGROK_API_RESPONSE=$(curl -s http://localhost:4040/api/tunnels)
 
 BACKEND_URL=$(echo $NGROK_API_RESPONSE | jq -r '.tunnels[] | select(.config.addr=="http://localhost:8081") | .public_url')
 FRONTEND_URL=$(echo $NGROK_API_RESPONSE | jq -r '.tunnels[] | select(.config.addr=="http://localhost:3000") | .public_url')
 
+#ngrok to git session
 cd ../speak-fun
 DEPLOYMENTS_FILE="deployments.json"
 
 git reset --hard
-# Update the JSON file with new URLs
 jq --arg frontendUrl "$FRONTEND_URL" \
    --arg backendUrl "$BACKEND_URL" \
    '.frontendUrl = $frontendUrl | .backendUrl = $backendUrl' \
@@ -50,23 +43,35 @@ git add "$DEPLOYMENTS_FILE"
 git commit -m "Update deployment URLs"
 git push origin main &
 
-REPO="haakoaho/mobile-speak"
+#download next build session
+cd ../speak-server/frontend
+REPO_OWNER="haakoaho"
+REPO_NAME="mobile-speak"
+ARTIFACT_NAME="next-build"
 
-cd ../speak-server
-# Download the build artifact from the latest workflow run in the specified repository
-echo "Downloading build artifact..."
-latest_run_id=$(gh run list --repo $REPO --workflow=build.yml --branch=main --limit=1 --json databaseId --jq '.[0].databaseId')
-gh run download $latest_run_id --repo $REPO -n next-build -D frontend/.next
+RUN_ID=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+  https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/actions/runs \
+  | jq -r '.workflow_runs[] | select(.head_branch == "main") | .id' | head -n 1)
 
-# Start the backend service
+ARTIFACT_URL=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+  https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/actions/runs/$RUN_ID/artifacts \
+  | jq -r ".artifacts[] | select(.name == \"$ARTIFACT_NAME\") | .archive_download_url")
+
+
+curl -L -H "Authorization: token $GITHUB_TOKEN" -o artifact.zip $ARTIFACT_URL
+mkdir -p .next
+unzip artifact.zip -d .next
+
+
+# start backend session
 echo "Starting backend..."
-cd backend
+cd ../backend
 gradle bootRun &
 
-# Start the frontend service
+# start frontend session
 echo "Starting frontend..."
 cd ../frontend
-NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL npm run start
+npm run start
  &
 
 # Wait for both services to complete
