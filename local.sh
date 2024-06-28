@@ -72,6 +72,7 @@ gradle bootRun &
 # start frontend session
 echo "Starting frontend..."
 cd ../frontend
+npm install
 npm run start
 & wait
 
