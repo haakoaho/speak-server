@@ -31,8 +31,8 @@ sleep 30  # Ensure tmole has time to initialize
 BACKEND_URL=$(grep -o 'http://.*\.tunnelmole.net/' backend_tmole_output.txt | head -n 1)
 FRONTEND_URL=$(grep -o 'http://.*\.tunnelmole.net/*' frontend_tmole_output.txt | head -n 1)
 
-echo($BACKEND_URL)
-echo($FRONTEND_URL)
+echo $BACKEND_URL
+echo $FRONTEND_URL
 
 # tmole to git session
 cd ../speak-fun
