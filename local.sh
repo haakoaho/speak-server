@@ -34,8 +34,9 @@ ARTIFACT_URL=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
   | jq -r ".artifacts[] | select(.name == \"$ARTIFACT_NAME\") | .archive_download_url")
 
 curl -L -H "Authorization: token $GITHUB_TOKEN" -o artifact.zip $ARTIFACT_URL
-rm -rf .next node_modules # Clean up old artifacts
-unzip artifact.zip
+rm -r .next
+mkdir -p .next
+unzip artifact.zip -d .next
 
 # start backend session
 echo "Starting backend..."
@@ -45,6 +46,7 @@ gradle bootRun &
 # start frontend session
 echo "Starting frontend..."
 cd ../frontend
+npm install
 npm run start &
 
 wait # Wait for both services to complete
