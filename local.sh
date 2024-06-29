@@ -19,36 +19,6 @@ if lsof -i tcp:3000 -t > /dev/null; then
   kill -9 $PID
 fi
 
-# tmole session for port 8081
-echo "Starting tmole forwarding for port 8081..."
-nohup tmole 8081 > backend_tmole_output.txt 2>&1 &
-
-# tmole session for port 3000
-echo "Starting tmole forwarding for port 3000..."
-nohup tmole 3000 > frontend_tmole_output.txt 2>&1 &
-sleep 30  # Ensure tmole has time to initialize
-
-BACKEND_URL=$(grep -o 'http://.*\.tunnelmole.net/' backend_tmole_output.txt | head -n 1)
-FRONTEND_URL=$(grep -o 'http://.*\.tunnelmole.net/*' frontend_tmole_output.txt | head -n 1)
-
-echo $BACKEND_URL
-echo $FRONTEND_URL
-
-# tmole to git session
-cd ../speak-fun
-DEPLOYMENTS_FILE="deployments.json"
-
-git fetch origin
-git reset --hard origin/main
-jq --arg frontendUrl "$FRONTEND_URL" \
-   --arg backendUrl "$BACKEND_URL" \
-   '.frontendUrl = $frontendUrl | .backendUrl = $backendUrl' \
-   "$DEPLOYMENTS_FILE" > tmp && mv tmp "$DEPLOYMENTS_FILE"
-
-git add "$DEPLOYMENTS_FILE"
-git commit -m "Update deployment URLs"
-git push origin main &
-
 # download next build session
 cd ../speak-server/frontend
 REPO_OWNER="haakoaho"
@@ -64,9 +34,8 @@ ARTIFACT_URL=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
   | jq -r ".artifacts[] | select(.name == \"$ARTIFACT_NAME\") | .archive_download_url")
 
 curl -L -H "Authorization: token $GITHUB_TOKEN" -o artifact.zip $ARTIFACT_URL
-rm -r .next
-mkdir -p .next
-unzip artifact.zip -d .next
+rm -rf .next node_modules # Clean up old artifacts
+unzip artifact.zip
 
 # start backend session
 echo "Starting backend..."
@@ -76,7 +45,6 @@ gradle bootRun &
 # start frontend session
 echo "Starting frontend..."
 cd ../frontend
-npm install
 npm run start &
 
 wait # Wait for both services to complete
