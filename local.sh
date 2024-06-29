@@ -21,13 +21,15 @@ fi
 
 # tmole session for port 8081
 echo "Starting tmole forwarding for port 8081..."
-BACKEND_TMOLE_OUTPUT=$(tmole 8081)
-BACKEND_URL=$(echo "$BACKEND_TMOLE_OUTPUT" | grep -o 'http://[^ ]*' | head -n 1)
+nohup tmole 8081 > backend_tmole_output.txt 2>&1 &
+sleep 15  # Ensure tmole has time to initialize
+BACKEND_URL=$(grep -o 'http://[^ ]*' backend_tmole_output.txt | head -n 1)
 
 # tmole session for port 3000
 echo "Starting tmole forwarding for port 3000..."
-FRONTEND_TMOLE_OUTPUT=$(tmole 3000)
-FRONTEND_URL=$(echo "$FRONTEND_TMOLE_OUTPUT" | grep -o 'http://[^ ]*' | head -n 1)
+nohup tmole 3000 > frontend_tmole_output.txt 2>&1 &
+sleep 15  # Ensure tmole has time to initialize
+FRONTEND_URL=$(grep -o 'http://[^ ]*' frontend_tmole_output.txt | head -n 1)
 
 # tmole to git session
 cd ../speak-fun
