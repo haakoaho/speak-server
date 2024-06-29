@@ -2,10 +2,15 @@
 source ~/.bashrc
 
 # git session
+git fetch origin
 git checkout main
+git reset --hard origin/main
 git pull
 git submodule foreach --recursive git reset --hard
-git submodule update --init --recursive --remote
+git submodule update --init --recursive
+git submodule foreach --recursive git checkout main
+git submodule foreach --recursive git pull
+
 
 # stop running services session
 if lsof -i tcp:8081 -t > /dev/null; then
