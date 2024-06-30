@@ -51,7 +51,7 @@ gradle bootRun &
 # start frontend session
 echo "Starting frontend..."
 cd ../frontend
-npm install
-npm run start &
+yarn install
+yarn start &
 
 wait # Wait for both services to complete
