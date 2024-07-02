@@ -36,5 +36,5 @@ git push origin main &
 
 # start backend session
 echo "Starting backend..."
-cd ../backend
+cd ../speak-server/backend
 gradle bootRun &
