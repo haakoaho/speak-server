@@ -15,33 +15,25 @@ if lsof -i tcp:8081 -t > /dev/null; then
   gradle --stop
 fi
 
-# TunnelMole session for port 8081
-echo "Starting TunnelMole forwarding for port 8081..."
-pkill -f tunnelmole  # Ensure no leftover TunnelMole processes
+##!/bin/bash
 
-# Option 1: Subprocesses and Waiting (controlled execution)
-tunnelmole_command="tmole 8081"  # Replace with your actual command
-$tunnelmole_command &> backend_tmole_output.txt &
-tunnelmole_pid=$!
+TEMP_FILE=$(mktemp)
+pkill -f tunnelmole
+tmux kill-session -t speak-fun-deployment 
 
-# Option 2: Conditional Execution (if session established)
-# tunnelmole_command="tmole 8081"  # Replace with your actual command
-# $tunnelmole_command &> backend_tmole_output.txt
+tmux new -s speak-fun-deployment
+tmux send-keys "tmole 8081 > $TEMP_FILE 2>&1" C-m  # Capture output to shared temporary file
 
-# Extract session URL (using robust grep for both options)
-sleep 15  # Ensure TunnelMole has time to initialize (adjust if needed)
-BACKEND_URL=$(grep -Eo "https://[^\"]+" backend_tmole_output.txt | head -n 1)
+# Wait for a few seconds to allow TunnelMole to capture the URL
+sleep 10  # Adjust the sleep time as needed
 
-# Check if session URL was captured successfully (applicable to both options)
-if [[ -z "$BACKEND_URL" ]]; then
-  echo "Error: Failed to capture TunnelMole session URL. Please check 'backend_tmole_output.txt' for details."
-  exit 1
-fi
+# Detach from the tmux session
+tmux detach
 
-# Option 1: Wait for TunnelMole process to finish (if using subprocesses)
-wait $tunnelmole_pid
+# Capture the URL from the temporary file
+BACKEND_URL=$(grep -o "https://.*tunnelmole.net" $TEMP_FILE | head -n 1)
 
-echo
+rm $TEMP_FILE
 
 # tmole to git session
 cd ../speak-fun
