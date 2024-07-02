@@ -25,7 +25,8 @@ BACKEND_URL=$(grep -o 'http://.*\.tunnelmole.net/' backend_tmole_output.txt | he
 cd ../speak-fun
 DEPLOYMENTS_FILE="deployments.json"
 
-git reset --hard
+git fetch origin
+git reset --hard origin/main
 jq --arg backendUrl "$BACKEND_URL" \
    '.backendUrl = $backendUrl' \
    "$DEPLOYMENTS_FILE" > tmp && mv tmp "$DEPLOYMENTS_FILE"
