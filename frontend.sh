@@ -18,19 +18,28 @@ fi
 
 # ensure no other tmole instances are running
 pkill -f tunnelmole
+tmux kill-session -t speak-fun-deployment-frontend
+
+TEMP_FILE=$(mktemp)
 
 # tmole session for port 3000
 echo "Starting tmole forwarding for port 3000..."
-tmole 3000 > frontend_tmole_output.txt 2>&1 &
-sleep 15  # Ensure tmole has time to initialize
-FRONTEND_URL=$(grep -o 'http://.*\.tunnelmole.net/' frontend_tmole_output.txt | head -n 1)
-pkill -f tunnelmole
+tmux new-session -d -s speak-fun-deployment-frontend
+tmux send-keys "tmole 3000 > $TEMP_FILE 2>&1" C-m  # Capture output to shared temporary file
+
+# Wait for a few seconds to allow TunnelMole to capture the URL
+sleep 10  # Adjust the sleep time as needed
+
+# Capture the URL from the temporary file
+FRONTEND_URL=$(grep -o 'https://.*\.tunnelmole.net' $TEMP_FILE | head -n 1)
+rm $TEMP_FILE
 
 # tmole to git session
 cd ../speak-fun
 DEPLOYMENTS_FILE="deployments.json"
 
-git reset --hard
+git fetch origin
+git reset --hard origin/main
 jq --arg frontendUrl "$FRONTEND_URL" \
    '.frontendUrl = $frontendUrl' \
    "$DEPLOYMENTS_FILE" > tmp && mv tmp "$DEPLOYMENTS_FILE"
@@ -60,7 +69,6 @@ unzip artifact.zip -d .next
 
 # start frontend session
 echo "Starting frontend..."
-cd ../frontend
 npm install
 npm run start &
 
