@@ -31,7 +31,7 @@ tmux send-keys "tmole 3000 > $TEMP_FILE 2>&1" C-m  # Capture output to shared te
 sleep 10  # Adjust the sleep time as needed
 
 # Capture the URL from the temporary file
-FRONTEND_URL=$(grep -o 'https://.*\.tunnelmole.net' $TEMP_FILE | head -n 1)
+NEXTAUTH_URL=$(grep -o 'https://.*\.tunnelmole.net' $TEMP_FILE | head -n 1)
 rm $TEMP_FILE
 
 # tmole to git session
@@ -40,7 +40,7 @@ DEPLOYMENTS_FILE="deployments.json"
 
 git fetch origin
 git reset --hard origin/main
-jq --arg frontendUrl "$FRONTEND_URL" \
+jq --arg frontendUrl "$NEXTAUTH_URL" \
    '.frontendUrl = $frontendUrl' \
    "$DEPLOYMENTS_FILE" > tmp && mv tmp "$DEPLOYMENTS_FILE"
 

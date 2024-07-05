@@ -15,20 +15,15 @@ if lsof -i tcp:8081 -t > /dev/null; then
   gradle --stop
 fi
 
-##!/bin/bash
-
 TEMP_FILE=$(mktemp)
 pkill -f tunnelmole
-tmux kill-session -t speak-fun-deployment 
+tmux kill-session -t speak-fun-deployment-backend
 
-tmux new -s speak-fun-deployment
+tmux new-session -d -s speak-fun-deployment-backend
 tmux send-keys "tmole 8081 > $TEMP_FILE 2>&1" C-m  # Capture output to shared temporary file
 
 # Wait for a few seconds to allow TunnelMole to capture the URL
 sleep 10  # Adjust the sleep time as needed
-
-# Detach from the tmux session
-tmux detach
 
 # Capture the URL from the temporary file
 BACKEND_URL=$(grep -o "https://.*tunnelmole.net" $TEMP_FILE | head -n 1)
