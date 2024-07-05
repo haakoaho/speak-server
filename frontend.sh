@@ -72,6 +72,4 @@ export NEXTAUTH_URL=$NEXTAUTH_URL
 
 echo "Starting frontend..."
 npm install
-npm run start &
-
-wait # Wait for frontend service to complete
+npm run start
