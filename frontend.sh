@@ -68,6 +68,8 @@ mkdir -p .next
 unzip artifact.zip -d .next
 
 # start frontend session
+export NEXTAUTH_URL=$NEXTAUTH_URL
+
 echo "Starting frontend..."
 npm install
 npm run start &
