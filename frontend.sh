@@ -31,18 +31,16 @@ tmux send-keys "tmole 3000 > $TEMP_FILE 2>&1" C-m  # Capture output to shared te
 sleep 10  # Adjust the sleep time as needed
 
 # Capture the URL from the temporary file
-NEXTAUTH_URL=$(grep -o 'https://.*\.tunnelmole.net' $TEMP_FILE | head -n 1)
+FRONTEND_URL=$(grep -o 'https://.*\.tunnelmole.net' $TEMP_FILE | head -n 1)
 rm $TEMP_FILE
 
 # tmole to git session
 cd ../speak-fun
-DEPLOYMENTS_FILE="deployments.json"
+DEPLOYMENTS_FILE="deployments/mobile-speak.json"
 
 git fetch origin
 git reset --hard origin/main
-jq --arg frontendUrl "$NEXTAUTH_URL" \
-   '.frontendUrl = $frontendUrl' \
-   "$DEPLOYMENTS_FILE" > tmp && mv tmp "$DEPLOYMENTS_FILE"
+jq --arg url "$FRONTEND_URL" '.url = $url' "$DEPLOYMENTS_FILE" > tmp && mv tmp "$DEPLOYMENTS_FILE"
 
 git add "$DEPLOYMENTS_FILE"
 git commit -m "Update frontend deployment URL"
@@ -68,8 +66,8 @@ mkdir -p .next
 unzip artifact.zip -d .next
 
 # start frontend session
-export NEXTAUTH_URL=$NEXTAUTH_URL
-
 echo "Starting frontend..."
 npm install
-npm run start
+npm run start &
+
+wait # Wait for frontend service to complete
