@@ -16,38 +16,8 @@ if lsof -i tcp:3000 -t > /dev/null; then
   kill -9 $PID
 fi
 
-# ensure no other tmole instances are running
-pkill -f tunnelmole
-tmux kill-session -t speak-fun-deployment-frontend
-
-TEMP_FILE=$(mktemp)
-
-# tmole session for port 3000
-echo "Starting tmole forwarding for port 3000..."
-tmux new-session -d -s speak-fun-deployment-frontend
-tmux send-keys "tmole 3000 > $TEMP_FILE 2>&1" C-m  # Capture output to shared temporary file
-
-# Wait for a few seconds to allow TunnelMole to capture the URL
-sleep 10  # Adjust the sleep time as needed
-
-# Capture the URL from the temporary file
-FRONTEND_URL=$(grep -o 'https://.*\.tunnelmole.net' $TEMP_FILE | head -n 1)
-rm $TEMP_FILE
-
-# tmole to git session
-cd ../speak-fun
-DEPLOYMENTS_FILE="deployments/mobile-speak.json"
-
-git fetch origin
-git reset --hard origin/main
-jq --arg url "$FRONTEND_URL" '.url = $url' "$DEPLOYMENTS_FILE" > tmp && mv tmp "$DEPLOYMENTS_FILE"
-
-git add "$DEPLOYMENTS_FILE"
-git commit -m "Update frontend deployment URL"
-git push origin main
-
 # download next build session
-cd ../speak-server/frontend
+cd frontend
 REPO_OWNER="haakoaho"
 REPO_NAME="mobile-speak"
 ARTIFACT_NAME="next-build"
