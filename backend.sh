@@ -15,40 +15,8 @@ if lsof -i tcp:8081 -t > /dev/null; then
   gradle --stop
 fi
 
-# Ensure no other tmole instances are running
-pkill -f tunnelmole
-tmux kill-session -t speak-fun-deployment-backend
-
-TEMP_FILE=$(mktemp)
-
-# tmole session for port 8081
-echo "Starting tmole forwarding for port 8081..."
-tmux new-session -d -s speak-fun-deployment-backend
-tmux send-keys "tmole 8081 > $TEMP_FILE 2>&1" C-m  # Capture output to shared temporary file
-
-# Wait for a few seconds to allow TunnelMole to capture the URL
-sleep 10  # Adjust the sleep time as needed
-
-# Capture the URL from the temporary file
-BACKEND_URL=$(grep -o 'https://.*\.tunnelmole.net' $TEMP_FILE | head -n 1)
-rm $TEMP_FILE
-
-# tmole to git session
-cd ../speak-fun
-DEPLOYMENTS_FILE="deployments/meeting-planner.json"
-
-git fetch origin
-git reset --hard origin/main
-jq --arg url "$BACKEND_URL" '.url = $url' "$DEPLOYMENTS_FILE" > tmp && mv tmp "$DEPLOYMENTS_FILE"
-
-git add "$DEPLOYMENTS_FILE"
-git commit -m "Update backend deployment URL"
-git push origin main &  # Run in the background
 
 # Start backend session
 echo "Starting backend..."
 cd ../speak-server/backend
 gradle bootRun &
-
-# Optional cleanup
-rm backend_tmole_output.txt
